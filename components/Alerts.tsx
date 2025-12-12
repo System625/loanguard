@@ -64,69 +64,78 @@ export default function Alerts({}: AlertsProps) {
     }
   };
 
-  // Fetch alerts on mount
+  // Fetch alerts only when the user opens the alerts panel
   useEffect(() => {
-    fetchAlerts();
+    if (isOpen && alerts.length === 0 && !isLoading) {
+      fetchAlerts();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isOpen]);
 
-  // Realtime subscription
+  // Realtime subscription - only subscribe after initial load
   useEffect(() => {
-    const channel = supabase
-      .channel('alerts-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'alerts',
-        },
-        (payload) => {
-          const newAlert = payload.new as Alert;
-          setAlerts((current) => [newAlert, ...current]);
+    // Delay subscription setup to avoid blocking initial render
+    const timeoutId = setTimeout(() => {
+      const channel = supabase
+        .channel('alerts-realtime')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'alerts',
+          },
+          (payload) => {
+            const newAlert = payload.new as Alert;
+            setAlerts((current) => [newAlert, ...current]);
 
-          // Show toast notification for new alert
-          toast.warning('New Alert', {
-            description: newAlert.message,
-            action: {
-              label: 'View',
-              onClick: () => {
-                setIsOpen(true);
+            // Show toast notification for new alert
+            toast.warning('New Alert', {
+              description: newAlert.message,
+              action: {
+                label: 'View',
+                onClick: () => {
+                  setIsOpen(true);
+                },
               },
-            },
-          });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'alerts',
-        },
-        (payload) => {
-          setAlerts((current) =>
-            current.map((alert) =>
-              alert.id === payload.new.id ? (payload.new as Alert) : alert
-            )
-          );
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'alerts',
-        },
-        (payload) => {
-          setAlerts((current) => current.filter((alert) => alert.id !== payload.old.id));
-        }
-      )
-      .subscribe();
+            });
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'alerts',
+          },
+          (payload) => {
+            setAlerts((current) =>
+              current.map((alert) =>
+                alert.id === payload.new.id ? (payload.new as Alert) : alert
+              )
+            );
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'alerts',
+          },
+          (payload) => {
+            setAlerts((current) => current.filter((alert) => alert.id !== payload.old.id));
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }, 1000); // Delay by 1 second
 
     return () => {
-      supabase.removeChannel(channel);
+      clearTimeout(timeoutId);
     };
   }, [supabase]);
 

@@ -38,6 +38,7 @@ export default function LoginPage() {
         toast.success('Welcome back!', {
           description: 'Redirecting to dashboard...',
         });
+        // Middleware will handle session refresh and redirect
         router.push('/dashboard');
         router.refresh();
       }

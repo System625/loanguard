@@ -63,9 +63,6 @@ function LoansTable({
         <p className="mt-2 text-sm text-slate-600">
           Get started by creating your first loan.
         </p>
-        <div className="mt-4">
-          <NewLoanModal />
-        </div>
       </div>
     );
   }
@@ -118,6 +115,23 @@ export default function DashboardClient({ initialLoans }: DashboardClientProps) 
   const router = useRouter();
   const supabase = useSupabaseClient();
 
+  const handleLoanCreated = async () => {
+    // Manually refresh loans after creation
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('loans')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setLoans(data);
+    }
+  };
+
   // Calculate statistics
   const totalLoans = loans.length;
   const totalAmount = loans.reduce((sum, loan) => sum + loan.loan_amount, 0);
@@ -130,40 +144,47 @@ export default function DashboardClient({ initialLoans }: DashboardClientProps) 
   const overdueLoans = loans.filter((loan) => loan.status === 'overdue');
   const paidLoans = loans.filter((loan) => loan.status === 'paid');
 
-  // Realtime subscription
+  // Realtime subscription - defer to avoid blocking initial render
   useEffect(() => {
-    const channel = supabase
-      .channel('loans-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'loans',
-        },
-        (payload) => {
-          console.log('Realtime update:', payload);
+    // Delay subscription setup by 500ms to prioritize initial render
+    const timeoutId = setTimeout(() => {
+      const channel = supabase
+        .channel('loans-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'loans',
+          },
+          (payload) => {
+            console.log('Realtime update:', payload);
 
-          if (payload.eventType === 'INSERT') {
-            setLoans((current) => [payload.new as Loan, ...current]);
-            toast.success('New loan added');
-          } else if (payload.eventType === 'UPDATE') {
-            setLoans((current) =>
-              current.map((loan) =>
-                loan.id === payload.new.id ? (payload.new as Loan) : loan
-              )
-            );
-            toast.info('Loan updated');
-          } else if (payload.eventType === 'DELETE') {
-            setLoans((current) => current.filter((loan) => loan.id !== payload.old.id));
-            toast.info('Loan deleted');
+            if (payload.eventType === 'INSERT') {
+              setLoans((current) => [payload.new as Loan, ...current]);
+              toast.success('New loan added');
+            } else if (payload.eventType === 'UPDATE') {
+              setLoans((current) =>
+                current.map((loan) =>
+                  loan.id === payload.new.id ? (payload.new as Loan) : loan
+                )
+              );
+              toast.info('Loan updated');
+            } else if (payload.eventType === 'DELETE') {
+              setLoans((current) => current.filter((loan) => loan.id !== payload.old.id));
+              toast.info('Loan deleted');
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }, 500);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearTimeout(timeoutId);
     };
   }, [supabase]);
 
@@ -208,7 +229,7 @@ export default function DashboardClient({ initialLoans }: DashboardClientProps) 
           <h2 className="text-3xl font-bold text-slate-900">Dashboard</h2>
           <p className="text-slate-600 mt-2">Monitor and manage your loan portfolio</p>
         </div>
-        <NewLoanModal />
+        <NewLoanModal onLoanCreated={handleLoanCreated} />
       </div>
 
       {/* Summary Cards */}

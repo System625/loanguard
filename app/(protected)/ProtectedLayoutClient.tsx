@@ -49,8 +49,8 @@ export default function ProtectedLayoutClient({
     }
 
     toast.success('Signed out successfully');
-    router.push('/login');
-    router.refresh();
+    // Use window.location.href to ensure full page reload and clear all state
+    window.location.href = '/login';
   };
 
   // Get user initials for avatar fallback

@@ -141,12 +141,12 @@ export default function NewLoanModal({ onLoanCreated, triggerButton }: NewLoanMo
         return;
       }
 
-      // Get current user session
+      // Get current user
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      if (!session) {
+      if (!user) {
         toast.error('Authentication required', {
           description: 'Please log in to create a loan',
         });
@@ -175,7 +175,7 @@ export default function NewLoanModal({ onLoanCreated, triggerButton }: NewLoanMo
             status: values.status,
             risk_score: riskScore,
             payment_history: [],
-            user_id: session.user.id,
+            user_id: user.id,
           },
         ])
         .select();

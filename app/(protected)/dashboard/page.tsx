@@ -28,14 +28,20 @@ export default async function DashboardPage() {
     }
   );
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // Parallel fetch user and session
+  const [
+    { data: { user } },
+    { data: { session } }
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.auth.getSession()
+  ]);
 
-  // Fetch initial loans data
+  // Fetch initial loans data for the current user
   const { data: loans, error } = await supabase
     .from('loans')
     .select('*')
+    .eq('user_id', user?.id)
     .order('created_at', { ascending: false });
 
   if (error) {
