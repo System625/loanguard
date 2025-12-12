@@ -71,8 +71,16 @@ export default function ConnectPlaid() {
     }
   };
 
+  const handleClick = () => {
+    if (linkToken) {
+      open();
+    } else {
+      getToken();
+    }
+  };
+
   return (
-    <Button onClick={linkToken ? open : getToken} disabled={!!linkToken && !ready}>
+    <Button onClick={handleClick} disabled={!!linkToken && !ready}>
       {linkToken ? (ready ? "Connect Bank" : "Loading…") : "Connect Loan Apps"}
     </Button>
   );
