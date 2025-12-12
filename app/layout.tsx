@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SupabaseProvider from "@/components/SupabaseProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,17 +21,21 @@ export const metadata: Metadata = {
   keywords: ["loan monitoring", "risk management", "ESG metrics", "financial tracking"],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Fetch session server-side to hydrate the provider
+  const supabase = await createServerSupabaseClient();
+  const { data: { session } } = await supabase.auth.getSession();
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SupabaseProvider session={null}>
+        <SupabaseProvider session={session}>
           {children}
           <Toaster />
         </SupabaseProvider>

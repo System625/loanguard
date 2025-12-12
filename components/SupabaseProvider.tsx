@@ -22,7 +22,23 @@ export default function SupabaseProvider({
   const [supabase] = useState(() =>
     createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return document.cookie
+              .split('; ')
+              .find((row) => row.startsWith(`${name}=`))
+              ?.split('=')[1];
+          },
+          set(name: string, value: string, options: { maxAge?: number }) {
+            document.cookie = `${name}=${value}; path=/; max-age=${options.maxAge}; SameSite=Lax; Secure`;
+          },
+          remove(name: string) {
+            document.cookie = `${name}=; path=/; max-age=0`;
+          },
+        },
+      }
     )
   );
   const [session, setSession] = useState<Session | null>(initialSession);

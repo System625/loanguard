@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
+import { createServerSupabaseClient, getCurrentUser } from '@/lib/supabase/server';
 import ProtectedLayoutClient from './ProtectedLayoutClient';
 
 export default async function ProtectedLayout({
@@ -8,45 +7,15 @@ export default async function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
+  // getCurrentUser internally calls createServerSupabaseClient (cached)
+  const user = await getCurrentUser();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
-          }
-        },
-      },
-    }
-  );
-
-  // Parallel fetch user and session
-  const [
-    { data: { user } },
-    { data: { session } }
-  ] = await Promise.all([
-    supabase.auth.getUser(),
-    supabase.auth.getSession()
-  ]);
-
-  if (!user || !session) {
+  if (!user) {
     redirect('/login');
   }
 
-  // Fetch user profile
+  // Only fetch profile - user is already authenticated
+  const supabase = await createServerSupabaseClient();
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
@@ -54,7 +23,7 @@ export default async function ProtectedLayout({
     .single();
 
   return (
-    <ProtectedLayoutClient session={session} profile={profile}>
+    <ProtectedLayoutClient user={user} profile={profile}>
       {children}
     </ProtectedLayoutClient>
   );

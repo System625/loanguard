@@ -31,6 +31,7 @@ export default function LoginPage() {
         toast.error('Login failed', {
           description: error.message,
         });
+        setIsLoading(false);
         return;
       }
 
@@ -38,15 +39,17 @@ export default function LoginPage() {
         toast.success('Welcome back!', {
           description: 'Redirecting to dashboard...',
         });
-        // Middleware will handle session refresh and redirect
-        router.push('/dashboard');
+
+        // Wait for cookies to be set, then refresh and navigate
+        // The onAuthStateChange in SupabaseProvider will handle the refresh
+        await new Promise(resolve => setTimeout(resolve, 100));
         router.refresh();
+        router.push('/dashboard');
       }
     } catch {
       toast.error('An unexpected error occurred', {
         description: 'Please try again later.',
       });
-    } finally {
       setIsLoading(false);
     }
   };

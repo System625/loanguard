@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useSupabaseClient } from '@/components/SupabaseProvider';
-import { Session } from '@supabase/supabase-js';
+import { User } from '@supabase/supabase-js';
 import Alerts from '@/components/Alerts';
 
 interface Profile {
@@ -26,13 +26,13 @@ interface Profile {
 
 interface ProtectedLayoutClientProps {
   children: React.ReactNode;
-  session: Session;
+  user: User;
   profile: Profile | null;
 }
 
 export default function ProtectedLayoutClient({
   children,
-  session,
+  user,
   profile,
 }: ProtectedLayoutClientProps) {
   const router = useRouter();
@@ -49,8 +49,11 @@ export default function ProtectedLayoutClient({
     }
 
     toast.success('Signed out successfully');
-    // Use window.location.href to ensure full page reload and clear all state
-    window.location.href = '/login';
+
+    // Wait for cookies to be cleared, then refresh and navigate
+    await new Promise(resolve => setTimeout(resolve, 100));
+    router.refresh();
+    router.push('/login');
   };
 
   // Get user initials for avatar fallback
@@ -74,11 +77,11 @@ export default function ProtectedLayoutClient({
             </div>
 
             <div className="flex items-center gap-4">
-              <Alerts userId={session.user.id} />
+              <Alerts userId={user.id} />
 
               <div className="hidden sm:block text-right mr-2">
                 <p className="text-sm font-medium text-slate-900">
-                  {session.user.email}
+                  {user.email}
                 </p>
                 {profile?.role && (
                   <p className="text-xs text-slate-600 capitalize">
@@ -95,11 +98,11 @@ export default function ProtectedLayoutClient({
                   >
                     <Avatar className="h-10 w-10">
                       <AvatarImage
-                        src={session.user.user_metadata?.avatar_url}
-                        alt={session.user.email || 'User'}
+                        src={user.user_metadata?.avatar_url}
+                        alt={user.email || 'User'}
                       />
                       <AvatarFallback className="bg-blue-600 text-white">
-                        {getInitials(session.user.email || 'U')}
+                        {getInitials(user.email || 'U')}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -108,7 +111,7 @@ export default function ProtectedLayoutClient({
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">
-                        {session.user.email}
+                        {user.email}
                       </p>
                       {profile?.role && (
                         <p className="text-xs leading-none text-muted-foreground capitalize">
