@@ -20,6 +20,7 @@ import { Progress } from '@/components/ui/progress';
 import { useSupabaseClient } from '@/components/SupabaseProvider';
 import DashboardCharts from '@/components/DashboardCharts';
 import NewLoanModal from '@/components/NewLoanModal';
+import ConnectPlaid from '@/components/ConnectPlaid';
 
 interface Loan {
   id: string;
@@ -229,7 +230,10 @@ export default function DashboardClient({ initialLoans }: DashboardClientProps) 
           <h2 className="text-3xl font-bold text-slate-900">Dashboard</h2>
           <p className="text-slate-600 mt-2">Monitor and manage your loan portfolio</p>
         </div>
-        <NewLoanModal onLoanCreated={handleLoanCreated} />
+        <div className="flex gap-3">
+          <ConnectPlaid />
+          <NewLoanModal onLoanCreated={handleLoanCreated} />
+        </div>
       </div>
 
       {/* Summary Cards */}
