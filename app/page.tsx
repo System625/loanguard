@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Shield, TrendingUp, Bell, Leaf, BarChart3, Users, Lock, Zap } from 'lucide-react';
+import { Shield, TrendingUp, Bell, Leaf, BarChart3, Users } from 'lucide-react';
 
 export default function LandingPage() {
   return (

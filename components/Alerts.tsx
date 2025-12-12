@@ -34,16 +34,40 @@ interface AlertsProps {
   userId?: string;
 }
 
-export default function Alerts({ userId }: AlertsProps) {
+export default function Alerts({}: AlertsProps) {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const supabase = useSupabaseClient();
 
+  const fetchAlerts = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('alerts')
+        .select('*')
+        .order('triggered_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+
+      setAlerts(data || []);
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error('Failed to load alerts', {
+        description: errorMessage,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Fetch alerts on mount
   useEffect(() => {
     fetchAlerts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Realtime subscription
@@ -106,27 +130,6 @@ export default function Alerts({ userId }: AlertsProps) {
     };
   }, [supabase]);
 
-  const fetchAlerts = async () => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('alerts')
-        .select('*')
-        .order('triggered_at', { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-
-      setAlerts(data || []);
-    } catch (error: any) {
-      console.error('Error fetching alerts:', error);
-      toast.error('Failed to load alerts', {
-        description: error.message,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const markAsRead = async (alertId: string) => {
     try {
@@ -142,10 +145,11 @@ export default function Alerts({ userId }: AlertsProps) {
           alert.id === alertId ? { ...alert, read: true } : alert
         )
       );
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error marking alert as read:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to mark as read', {
-        description: error.message,
+        description: errorMessage,
       });
     }
   };
@@ -168,10 +172,11 @@ export default function Alerts({ userId }: AlertsProps) {
       );
 
       toast.success('All alerts marked as read');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error marking all as read:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to mark all as read', {
-        description: error.message,
+        description: errorMessage,
       });
     }
   };
@@ -187,10 +192,11 @@ export default function Alerts({ userId }: AlertsProps) {
 
       setAlerts((current) => current.filter((alert) => alert.id !== alertId));
       toast.success('Alert deleted');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error deleting alert:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to delete alert', {
-        description: error.message,
+        description: errorMessage,
       });
     }
   };
@@ -313,7 +319,7 @@ export default function Alerts({ userId }: AlertsProps) {
                 No notifications
               </h3>
               <p className="text-sm text-slate-600">
-                You're all caught up! New alerts will appear here.
+                You&apos;re all caught up! New alerts will appear here.
               </p>
             </div>
           ) : (

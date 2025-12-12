@@ -13,7 +13,7 @@ export default function NotFound() {
             <CardTitle className="text-slate-900">Page Not Found</CardTitle>
           </div>
           <CardDescription>
-            The page you're looking for doesn't exist
+            The page you&apos;re looking for doesn&apos;t exist
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

@@ -64,7 +64,7 @@ export default function CreateLoanDialog({
         return;
       }
 
-      const { data, error } = await supabase.from('loans').insert([
+      const { error } = await supabase.from('loans').insert([
         {
           borrower_name: borrowerName,
           loan_amount: parseFloat(loanAmount),
@@ -93,10 +93,11 @@ export default function CreateLoanDialog({
       setRiskScore('');
 
       onLoanCreated();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating loan:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to create loan', {
-        description: error.message,
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -217,7 +218,7 @@ export default function CreateLoanDialog({
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={status}
-                  onValueChange={(value: any) => setStatus(value)}
+                  onValueChange={(value) => setStatus(value as 'active' | 'overdue' | 'paid')}
                   disabled={isLoading}
                 >
                   <SelectTrigger id="status">

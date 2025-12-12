@@ -74,7 +74,7 @@ export default function SignUpPage() {
           }, 3000);
         }
       }
-    } catch (error) {
+    } catch {
       toast.error('An unexpected error occurred', {
         description: 'Please try again later.',
       });

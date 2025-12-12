@@ -62,12 +62,12 @@ const loanFormSchema = z.object({
       message: 'Interest rate must be between 0 and 100',
     }),
   start_date: z.date({
-    required_error: 'Start date is required',
+    message: 'Start date is required',
   }),
   due_date: z.date({
-    required_error: 'Due date is required',
+    message: 'Due date is required',
   }),
-  status: z.enum(['active', 'overdue', 'paid']).default('active'),
+  status: z.enum(['active', 'overdue', 'paid']),
 });
 
 type LoanFormValues = z.infer<typeof loanFormSchema>;
@@ -163,7 +163,7 @@ export default function NewLoanModal({ onLoanCreated, triggerButton }: NewLoanMo
       );
 
       // Insert loan into database
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('loans')
         .insert([
           {
@@ -196,10 +196,11 @@ export default function NewLoanModal({ onLoanCreated, triggerButton }: NewLoanMo
       if (onLoanCreated) {
         onLoanCreated();
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating loan:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast.error('Failed to create loan', {
-        description: error.message || 'An unexpected error occurred',
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);

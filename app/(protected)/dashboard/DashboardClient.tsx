@@ -4,11 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Session } from '@supabase/supabase-js';
 import { toast } from 'sonner';
-import { Plus, TrendingUp, AlertCircle, DollarSign, FileText } from 'lucide-react';
+import { TrendingUp, AlertCircle, DollarSign, FileText } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
@@ -31,7 +29,7 @@ interface Loan {
   start_date: string;
   due_date: string;
   status: 'active' | 'overdue' | 'paid';
-  payment_history: any;
+  payment_history: unknown;
   risk_score: number;
   created_at?: string;
 }
@@ -41,9 +39,82 @@ interface DashboardClientProps {
   session: Session | null;
 }
 
-export default function DashboardClient({ initialLoans, session }: DashboardClientProps) {
+// LoansTable component moved outside to avoid creating components during render
+function LoansTable({
+  loans,
+  formatCurrency,
+  formatDate,
+  getStatusBadge,
+  getRiskColor,
+  onLoanClick
+}: {
+  loans: Loan[];
+  formatCurrency: (amount: number) => string;
+  formatDate: (dateString: string) => string;
+  getStatusBadge: (status: string) => React.ReactElement;
+  getRiskColor: (risk: number) => string;
+  onLoanClick: (id: string) => void;
+}) {
+  if (loans.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <FileText className="mx-auto h-12 w-12 text-slate-400" />
+        <h3 className="mt-4 text-lg font-medium text-slate-900">No loans found</h3>
+        <p className="mt-2 text-sm text-slate-600">
+          Get started by creating your first loan.
+        </p>
+        <div className="mt-4">
+          <NewLoanModal />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-md border border-slate-200">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Borrower</TableHead>
+            <TableHead>Amount</TableHead>
+            <TableHead>Interest Rate</TableHead>
+            <TableHead>Due Date</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Risk Score</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {loans.map((loan) => (
+            <TableRow
+              key={loan.id}
+              className="cursor-pointer hover:bg-slate-50"
+              onClick={() => onLoanClick(loan.id)}
+            >
+              <TableCell className="font-medium">{loan.borrower_name}</TableCell>
+              <TableCell>{formatCurrency(loan.loan_amount)}</TableCell>
+              <TableCell>{loan.interest_rate}%</TableCell>
+              <TableCell>{formatDate(loan.due_date)}</TableCell>
+              <TableCell>{getStatusBadge(loan.status)}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Progress
+                    value={loan.risk_score}
+                    className="w-20 h-2"
+                    indicatorClassName={getRiskColor(loan.risk_score)}
+                  />
+                  <span className="text-sm text-slate-600 w-8">{loan.risk_score}</span>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+export default function DashboardClient({ initialLoans }: DashboardClientProps) {
   const [loans, setLoans] = useState<Loan[]>(initialLoans);
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const supabase = useSupabaseClient();
 
@@ -128,65 +199,6 @@ export default function DashboardClient({ initialLoans, session }: DashboardClie
     if (risk >= 70) return 'bg-red-500';
     if (risk >= 40) return 'bg-yellow-500';
     return 'bg-green-500';
-  };
-
-  const LoansTable = ({ loans }: { loans: Loan[] }) => {
-    if (loans.length === 0) {
-      return (
-        <div className="text-center py-12">
-          <FileText className="mx-auto h-12 w-12 text-slate-400" />
-          <h3 className="mt-4 text-lg font-medium text-slate-900">No loans found</h3>
-          <p className="mt-2 text-sm text-slate-600">
-            Get started by creating your first loan.
-          </p>
-          <div className="mt-4">
-            <NewLoanModal />
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="rounded-md border border-slate-200">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Borrower</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Interest Rate</TableHead>
-              <TableHead>Due Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Risk Score</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loans.map((loan) => (
-              <TableRow
-                key={loan.id}
-                className="cursor-pointer hover:bg-slate-50"
-                onClick={() => router.push(`/loans/${loan.id}`)}
-              >
-                <TableCell className="font-medium">{loan.borrower_name}</TableCell>
-                <TableCell>{formatCurrency(loan.loan_amount)}</TableCell>
-                <TableCell>{loan.interest_rate}%</TableCell>
-                <TableCell>{formatDate(loan.due_date)}</TableCell>
-                <TableCell>{getStatusBadge(loan.status)}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Progress
-                      value={loan.risk_score}
-                      className="w-20 h-2"
-                      indicatorClassName={getRiskColor(loan.risk_score)}
-                    />
-                    <span className="text-sm text-slate-600 w-8">{loan.risk_score}</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    );
   };
 
   return (
@@ -279,19 +291,47 @@ export default function DashboardClient({ initialLoans, session }: DashboardClie
             </TabsList>
 
             <TabsContent value="all" className="space-y-4">
-              <LoansTable loans={loans} />
+              <LoansTable
+                loans={loans}
+                formatCurrency={formatCurrency}
+                formatDate={formatDate}
+                getStatusBadge={getStatusBadge}
+                getRiskColor={getRiskColor}
+                onLoanClick={(id) => router.push(`/loans/${id}`)}
+              />
             </TabsContent>
 
             <TabsContent value="active" className="space-y-4">
-              <LoansTable loans={activeLoans} />
+              <LoansTable
+                loans={activeLoans}
+                formatCurrency={formatCurrency}
+                formatDate={formatDate}
+                getStatusBadge={getStatusBadge}
+                getRiskColor={getRiskColor}
+                onLoanClick={(id) => router.push(`/loans/${id}`)}
+              />
             </TabsContent>
 
             <TabsContent value="overdue" className="space-y-4">
-              <LoansTable loans={overdueLoans} />
+              <LoansTable
+                loans={overdueLoans}
+                formatCurrency={formatCurrency}
+                formatDate={formatDate}
+                getStatusBadge={getStatusBadge}
+                getRiskColor={getRiskColor}
+                onLoanClick={(id) => router.push(`/loans/${id}`)}
+              />
             </TabsContent>
 
             <TabsContent value="paid" className="space-y-4">
-              <LoansTable loans={paidLoans} />
+              <LoansTable
+                loans={paidLoans}
+                formatCurrency={formatCurrency}
+                formatDate={formatDate}
+                getStatusBadge={getStatusBadge}
+                getRiskColor={getRiskColor}
+                onLoanClick={(id) => router.push(`/loans/${id}`)}
+              />
             </TabsContent>
           </Tabs>
         </CardContent>

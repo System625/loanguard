@@ -96,16 +96,17 @@ export default function ESGMetrics({ loanId, initialMetrics }: ESGMetricsProps) 
         description: 'Mock data has been generated for this loan',
       });
       setIsDialogOpen(false);
-    } catch (error: any) {
+    } catch (error) {
       // If table doesn't exist, show helpful message
-      if (error.code === '42P01') {
+      if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') {
         toast.info('ESG metrics table not configured', {
           description: 'Contact your administrator to enable ESG tracking',
         });
       } else {
         console.error('Error adding ESG metrics:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         toast.error('Failed to add ESG metrics', {
-          description: error.message,
+          description: errorMessage,
         });
       }
     } finally {
@@ -147,15 +148,16 @@ export default function ESGMetrics({ loanId, initialMetrics }: ESGMetricsProps) 
       setGovernanceScore('');
       setNotes('');
       setIsDialogOpen(false);
-    } catch (error: any) {
-      if (error.code === '42P01') {
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') {
         toast.info('ESG metrics table not configured', {
           description: 'Contact your administrator to enable ESG tracking',
         });
       } else {
         console.error('Error adding ESG metrics:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         toast.error('Failed to add ESG metrics', {
-          description: error.message,
+          description: errorMessage,
         });
       }
     } finally {
@@ -284,7 +286,7 @@ export default function ESGMetrics({ loanId, initialMetrics }: ESGMetricsProps) 
                         id="notes"
                         placeholder="Additional ESG notes and observations..."
                         value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)}
                         disabled={isLoading}
                         rows={3}
                       />

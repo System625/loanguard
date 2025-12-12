@@ -41,7 +41,7 @@ export default function LoginPage() {
         router.push('/dashboard');
         router.refresh();
       }
-    } catch (error) {
+    } catch {
       toast.error('An unexpected error occurred', {
         description: 'Please try again later.',
       });
@@ -118,7 +118,7 @@ export default function LoginPage() {
         </form>
         <CardFooter className="flex justify-center border-t border-slate-200 pt-4">
           <p className="text-sm text-slate-600">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
               Sign up
             </Link>

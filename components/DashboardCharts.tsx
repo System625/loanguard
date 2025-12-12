@@ -28,7 +28,7 @@ interface Loan {
   start_date: string;
   due_date: string;
   status: 'active' | 'overdue' | 'paid';
-  payment_history: any;
+  payment_history: unknown;
   risk_score: number;
   created_at?: string;
 }
@@ -47,6 +47,43 @@ const COLORS = {
 };
 
 const PIE_COLORS = ['#10b981', '#ef4444', '#94a3b8'];
+
+// CustomTooltip moved outside component to avoid creating components during render
+interface TooltipPayload {
+  name: string;
+  value: number;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayload[];
+  label?: string;
+}
+
+function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-lg">
+        <p className="text-sm font-medium text-slate-900">{label}</p>
+        <p className="text-sm text-slate-600">
+          {payload[0].name === 'amount'
+            ? formatCurrency(payload[0].value)
+            : `${payload[0].value}${payload[0].name === 'risk' ? '' : ''}`}
+        </p>
+      </div>
+    );
+  }
+  return null;
+}
 
 export default function DashboardCharts({ loans }: DashboardChartsProps) {
   // Prepare data for Line Chart (Loan amounts over time)
@@ -119,22 +156,6 @@ export default function DashboardCharts({ loans }: DashboardChartsProps) {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
-  };
-
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-lg">
-          <p className="text-sm font-medium text-slate-900">{label}</p>
-          <p className="text-sm text-slate-600">
-            {payload[0].name === 'amount'
-              ? formatCurrency(payload[0].value)
-              : `${payload[0].value}${payload[0].name === 'risk' ? '' : ''}`}
-          </p>
-        </div>
-      );
-    }
-    return null;
   };
 
   if (loans.length === 0) {
@@ -245,8 +266,8 @@ export default function DashboardCharts({ loans }: DashboardChartsProps) {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
+                      label={(props: { name?: string; percent?: number }) =>
+                        `${props.name || ''}: ${props.percent ? (props.percent * 100).toFixed(0) : 0}%`
                       }
                       outerRadius={100}
                       fill="#8884d8"

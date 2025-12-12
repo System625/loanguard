@@ -45,7 +45,7 @@ export default async function LoanDetailsPage({
   }
 
   // Fetch alerts for this loan
-  const { data: alerts, error: alertsError } = await supabase
+  const { data: alerts } = await supabase
     .from('alerts')
     .select('*')
     .eq('loan_id', params.id)

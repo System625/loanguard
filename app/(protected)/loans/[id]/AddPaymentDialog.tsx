@@ -32,6 +32,14 @@ import {
 import { useSupabaseClient } from '@/components/SupabaseProvider';
 import { cn } from '@/lib/utils';
 
+interface Payment {
+  id: string;
+  amount: number;
+  date: string;
+  method: string;
+  note?: string;
+}
+
 interface Loan {
   id: string;
   borrower_name: string;
@@ -40,7 +48,7 @@ interface Loan {
   start_date: string;
   due_date: string;
   status: 'active' | 'overdue' | 'paid';
-  payment_history: any[];
+  payment_history: Payment[];
   risk_score: number;
 }
 
@@ -128,10 +136,11 @@ export default function AddPaymentDialog({
       setNote('');
 
       onPaymentAdded(data);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error adding payment:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to add payment', {
-        description: error.message,
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -151,7 +160,7 @@ export default function AddPaymentDialog({
         <DialogHeader>
           <DialogTitle>Add Payment</DialogTitle>
           <DialogDescription>
-            Record a new payment for {loan.borrower_name}'s loan.
+            Record a new payment for {loan.borrower_name}&apos;s loan.
             <br />
             Remaining: {new Intl.NumberFormat('en-US', {
               style: 'currency',
@@ -235,7 +244,7 @@ export default function AddPaymentDialog({
                 id="note"
                 placeholder="Add any additional notes about this payment..."
                 value={note}
-                onChange={(e) => setNote(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNote(e.target.value)}
                 disabled={isLoading}
                 rows={3}
               />

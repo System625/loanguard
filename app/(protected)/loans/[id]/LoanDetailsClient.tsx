@@ -10,7 +10,6 @@ import {
   TrendingUp,
   AlertTriangle,
   Trash2,
-  Edit,
   Plus,
   CheckCircle,
 } from 'lucide-react';
@@ -235,9 +234,10 @@ export default function LoanDetailsClient({
 
       setLoan({ ...loan, status: newStatus });
       toast.success('Status updated successfully');
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to update status', {
-        description: error.message,
+        description: errorMessage,
       });
     } finally {
       setIsUpdatingStatus(false);
@@ -252,9 +252,10 @@ export default function LoanDetailsClient({
 
       toast.success('Loan deleted successfully');
       router.push('/dashboard');
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to delete loan', {
-        description: error.message,
+        description: errorMessage,
       });
     }
   };
@@ -274,9 +275,10 @@ export default function LoanDetailsClient({
         )
       );
       toast.success('Alert resolved');
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to resolve alert', {
-        description: error.message,
+        description: errorMessage,
       });
     }
   };
