@@ -153,17 +153,13 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Dashboard Screenshot Placeholder */}
+          {/* Dashboard Screenshot */}
           <div className="relative rounded-xl border-4 border-[#D0D9F7] shadow-2xl overflow-hidden bg-white">
-            <div className="aspect-video bg-gradient-to-br from-[#F3F4FB] to-white flex items-center justify-center">
-              <div className="text-center space-y-4 p-8">
-                <BarChart3 className="h-24 w-24 text-[#6B7DE8] mx-auto" />
-                <p className="text-xl font-semibold text-[#15123D]">Dashboard Screenshot</p>
-                <p className="text-sm text-[#556277] max-w-md">
-                  Add your dashboard screenshot here: <code className="bg-[#F3F4FB] px-2 py-1 rounded">public/screenshots/dashboard.png</code>
-                </p>
-              </div>
-            </div>
+            <img
+              src="/dashboard.png"
+              alt="LoanGuard Dashboard Preview showing portfolio analytics, loan management, and risk scoring"
+              className="w-full h-auto"
+            />
 
             {/* Feature Callouts */}
             <div className="absolute top-4 left-4 bg-[#6B7DE8] text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-lg flex items-center gap-2">
