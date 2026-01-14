@@ -103,7 +103,6 @@ export default function ESGMetrics({ loanId, initialMetrics }: ESGMetricsProps) 
           description: 'Contact your administrator to enable ESG tracking',
         });
       } else {
-        console.error('Error adding ESG metrics:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         toast.error('Failed to add ESG metrics', {
           description: errorMessage,
@@ -154,7 +153,6 @@ export default function ESGMetrics({ loanId, initialMetrics }: ESGMetricsProps) 
           description: 'Contact your administrator to enable ESG tracking',
         });
       } else {
-        console.error('Error adding ESG metrics:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         toast.error('Failed to add ESG metrics', {
           description: errorMessage,

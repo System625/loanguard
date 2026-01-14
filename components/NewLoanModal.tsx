@@ -75,9 +75,10 @@ type LoanFormValues = z.infer<typeof loanFormSchema>;
 interface NewLoanModalProps {
   onLoanCreated?: () => void;
   triggerButton?: React.ReactNode;
+  'data-tour'?: string;
 }
 
-export default function NewLoanModal({ onLoanCreated, triggerButton }: NewLoanModalProps) {
+export default function NewLoanModal({ onLoanCreated, triggerButton, 'data-tour': dataTour }: NewLoanModalProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const supabase = useSupabaseClient();
@@ -197,7 +198,6 @@ export default function NewLoanModal({ onLoanCreated, triggerButton }: NewLoanMo
         onLoanCreated();
       }
     } catch (error) {
-      console.error('Error creating loan:', error);
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast.error('Failed to create loan', {
         description: errorMessage,
@@ -211,7 +211,7 @@ export default function NewLoanModal({ onLoanCreated, triggerButton }: NewLoanMo
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {triggerButton || (
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button className="bg-blue-600 hover:bg-blue-700" data-tour={dataTour}>
             <Plus className="mr-2 h-4 w-4" />
             Create Loan
           </Button>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { LogOut } from 'lucide-react';
@@ -13,9 +14,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useSupabaseClient } from '@/components/SupabaseProvider';
 import { User } from '@supabase/supabase-js';
 import Alerts from '@/components/Alerts';
+import OnboardingTour from '@/components/OnboardingTour';
 
 interface Profile {
   id: string;
@@ -35,6 +47,7 @@ export default function ProtectedLayoutClient({
   user,
   profile,
 }: ProtectedLayoutClientProps) {
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const router = useRouter();
   const supabase = useSupabaseClient();
 
@@ -68,23 +81,23 @@ export default function ProtectedLayoutClient({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <nav className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-50">
+    <div className="min-h-screen bg-background">
+      <nav className="bg-white border-b border-border shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-slate-900">LoanGuard</h1>
+              <h1 className="text-2xl font-bold text-foreground">LoanGuard</h1>
             </div>
 
             <div className="flex items-center gap-4">
               <Alerts userId={user.id} />
 
               <div className="hidden sm:block text-right mr-2">
-                <p className="text-sm font-medium text-slate-900">
+                <p className="text-sm font-medium text-foreground">
                   {user.email}
                 </p>
                 {profile?.role && (
-                  <p className="text-xs text-slate-600 capitalize">
+                  <p className="text-xs text-muted-foreground capitalize">
                     {profile.role}
                   </p>
                 )}
@@ -101,7 +114,7 @@ export default function ProtectedLayoutClient({
                         src={user.user_metadata?.avatar_url}
                         alt={user.email || 'User'}
                       />
-                      <AvatarFallback className="bg-blue-600 text-white">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
                         {getInitials(user.email || 'U')}
                       </AvatarFallback>
                     </Avatar>
@@ -121,7 +134,7 @@ export default function ProtectedLayoutClient({
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
+                  <DropdownMenuItem onClick={() => setIsLogoutDialogOpen(true)}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>
                   </DropdownMenuItem>
@@ -135,6 +148,27 @@ export default function ProtectedLayoutClient({
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
+
+      {/* Onboarding Tour */}
+      <OnboardingTour userId={user.id} />
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will be signed out of your account and redirected to the login page.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSignOut}>
+              Log out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

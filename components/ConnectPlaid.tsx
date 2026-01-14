@@ -16,17 +16,23 @@ export default function ConnectPlaid() {
     token: linkToken!,
     onSuccess: async (public_token) => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const { data } = await supabase.auth.getUser();
+        const { data, error } = await supabase.auth.getUser();
 
-        if (!session?.access_token || !data.user?.id) {
+        if (error || !data.user?.id) {
+          toast.error("Authentication error. Please log in again.");
+          return;
+        }
+
+        // Get session for access token
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session?.access_token) {
           toast.error("Authentication error. Please log in again.");
           return;
         }
 
         const functionUrl = `${SUPABASE_URL}/functions/v1/fetch-loans`;
         const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-        console.log("Calling Edge Function:", functionUrl);
 
         // Create AbortController for timeout
         const controller = new AbortController();
@@ -47,11 +53,6 @@ export default function ConnectPlaid() {
           credentials: "omit" // Don't send cookies
         }).catch((fetchError) => {
           clearTimeout(timeoutId);
-          console.error("Network error calling Edge Function:", fetchError);
-          console.error("Error details:", {
-            name: fetchError.name,
-            message: fetchError.message
-          });
           if (fetchError.name === 'AbortError') {
             throw new Error("Request timed out. Please try again.");
           }
@@ -62,7 +63,6 @@ export default function ConnectPlaid() {
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          console.error("Failed to fetch loans:", res.status, errorData);
           throw new Error(`Failed to fetch loans: ${res.status} - ${errorData.error || res.statusText}`);
         }
 
@@ -73,7 +73,6 @@ export default function ConnectPlaid() {
           window.location.reload();
         }, 1000);
       } catch (error) {
-        console.error("Error fetching loans:", error);
         const errorMessage = error instanceof Error ? error.message : "Failed to import loans. Please try again.";
         toast.error(errorMessage);
       }
@@ -83,16 +82,24 @@ export default function ConnectPlaid() {
   const getToken = async () => {
     setIsLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.getUser();
 
-      if (!session?.access_token) {
+      if (error || !data.user) {
         toast.error("Please log in to connect your bank account");
         setIsLoading(false);
         return;
       }
 
+      // Get session for access token
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        toast.error("Authentication error. Please log in again.");
+        setIsLoading(false);
+        return;
+      }
+
       if (!SUPABASE_URL) {
-        console.error("SUPABASE_URL is not defined");
         toast.error("Configuration error: Supabase URL not found");
         setIsLoading(false);
         return;
@@ -100,11 +107,6 @@ export default function ConnectPlaid() {
 
       const functionUrl = `${SUPABASE_URL}/functions/v1/create-link-token`;
       const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-      
-      console.log("Calling Edge Function:", functionUrl);
-      console.log("Supabase URL:", SUPABASE_URL);
-      console.log("Session token exists:", !!session.access_token);
-      console.log("Anon key exists:", !!anonKey);
 
       // Create AbortController for timeout
       const controller = new AbortController();
@@ -116,12 +118,6 @@ export default function ConnectPlaid() {
         "apikey": anonKey
       };
 
-      console.log("Request headers:", { 
-        hasAuth: !!headers.Authorization, 
-        hasApikey: !!headers.apikey,
-        contentType: headers["Content-Type"]
-      });
-
       const res = await fetch(functionUrl, {
         method: "POST",
         headers,
@@ -130,12 +126,6 @@ export default function ConnectPlaid() {
         credentials: "omit" // Don't send cookies
       }).catch((fetchError) => {
         clearTimeout(timeoutId);
-        console.error("Network error calling Edge Function:", fetchError);
-        console.error("Error details:", {
-          name: fetchError.name,
-          message: fetchError.message,
-          stack: fetchError.stack
-        });
         if (fetchError.name === 'AbortError') {
           throw new Error("Request timed out. Please try again.");
         }
@@ -146,7 +136,6 @@ export default function ConnectPlaid() {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        console.error("Failed to create link token:", res.status, errorData);
         throw new Error(`Failed to create link token: ${res.status} - ${errorData.error || res.statusText}`);
       }
 
@@ -157,7 +146,6 @@ export default function ConnectPlaid() {
       setLinkToken(link_token);
       setIsLoading(false);
     } catch (error) {
-      console.error("Error getting Plaid link token:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to initialize bank connection";
       toast.error(errorMessage);
       setIsLoading(false);
@@ -178,3 +166,4 @@ export default function ConnectPlaid() {
     </Button>
   );
 }
+

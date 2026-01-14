@@ -53,7 +53,6 @@ export default function SignUpPage() {
           });
 
         if (profileError) {
-          console.error('Profile creation error:', profileError);
           // Don't show error to user as auth was successful
         }
 
@@ -84,20 +83,20 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-4">
-      <Card className="w-full max-w-md shadow-xl border-slate-200">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md shadow-xl border-2 border-border">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-3xl font-bold text-center text-slate-900">
+          <CardTitle className="text-3xl font-bold text-center text-foreground">
             LoanGuard
           </CardTitle>
-          <CardDescription className="text-center text-slate-600">
+          <CardDescription className="text-center text-muted-foreground">
             Create your account to get started
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-700">
+              <Label htmlFor="email" className="text-foreground">
                 Email
               </Label>
               <Input
@@ -108,11 +107,11 @@ export default function SignUpPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
-                className="border-slate-300 focus:border-blue-500"
+                className="border-input focus:ring-ring"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-700">
+              <Label htmlFor="password" className="text-foreground">
                 Password
               </Label>
               <Input
@@ -124,14 +123,14 @@ export default function SignUpPage() {
                 required
                 minLength={6}
                 disabled={isLoading}
-                className="border-slate-300 focus:border-blue-500"
+                className="border-input focus:ring-ring"
               />
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 Password must be at least 6 characters
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="role" className="text-slate-700">
+              <Label htmlFor="role" className="text-foreground">
                 I am a...
               </Label>
               <Select
@@ -139,7 +138,7 @@ export default function SignUpPage() {
                 onValueChange={(value) => setRole(value as 'lender' | 'borrower')}
                 disabled={isLoading}
               >
-                <SelectTrigger id="role" className="border-slate-300 focus:border-blue-500">
+                <SelectTrigger id="role" className="border-input focus:ring-ring">
                   <SelectValue placeholder="Select your role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -148,19 +147,21 @@ export default function SignUpPage() {
                 </SelectContent>
               </Select>
             </div>
-            <Button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Creating account...' : 'Sign Up'}
-            </Button>
+            <div className="flex justify-center text-center items-center">
+              <Button
+                type="submit"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Creating account...' : 'Sign Up'}
+              </Button>
+            </div>
           </CardContent>
         </form>
-        <CardFooter className="flex justify-center border-t border-slate-200 pt-4">
-          <p className="text-sm text-slate-600">
+        <CardFooter className="flex justify-center border-t border-border pt-4">
+          <p className="text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+            <Link href="/login" className="text-primary hover:text-primary/80 font-medium">
               Sign in
             </Link>
           </p>

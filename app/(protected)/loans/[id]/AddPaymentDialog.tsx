@@ -137,7 +137,6 @@ export default function AddPaymentDialog({
 
       onPaymentAdded(data);
     } catch (error) {
-      console.error('Error adding payment:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to add payment', {
         description: errorMessage,

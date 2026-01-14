@@ -1,11 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx shadcn@latest add:*)",
-      "Bash(npm uninstall:*)",
-      "Bash(npx tsc:*)"
-    ],
-    "deny": [],
-    "ask": []
+      "Bash(git rm:*)"
+    ]
   }
 }

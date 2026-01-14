@@ -21,6 +21,7 @@ import { useSupabaseClient } from '@/components/SupabaseProvider';
 import DashboardCharts from '@/components/DashboardCharts';
 import NewLoanModal from '@/components/NewLoanModal';
 import ConnectPlaid from '@/components/ConnectPlaid';
+import BorrowerDetailModal from '@/components/BorrowerDetailModal';
 
 interface Loan {
   id: string;
@@ -47,7 +48,8 @@ function LoansTable({
   formatDate,
   getStatusBadge,
   getRiskColor,
-  onLoanClick
+  onLoanClick,
+  onBorrowerClick
 }: {
   loans: Loan[];
   formatCurrency: (amount: number) => string;
@@ -55,6 +57,7 @@ function LoansTable({
   getStatusBadge: (status: string) => React.ReactElement;
   getRiskColor: (risk: number) => string;
   onLoanClick: (id: string) => void;
+  onBorrowerClick: (name: string) => void;
 }) {
   if (loans.length === 0) {
     return (
@@ -88,7 +91,15 @@ function LoansTable({
               className="cursor-pointer hover:bg-slate-50"
               onClick={() => onLoanClick(loan.id)}
             >
-              <TableCell className="font-medium">{loan.borrower_name}</TableCell>
+              <TableCell
+                className="font-medium text-blue-600 hover:underline cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onBorrowerClick(loan.borrower_name);
+                }}
+              >
+                {loan.borrower_name}
+              </TableCell>
               <TableCell>{formatCurrency(loan.loan_amount)}</TableCell>
               <TableCell>{loan.interest_rate}%</TableCell>
               <TableCell>{formatDate(loan.due_date)}</TableCell>
@@ -113,6 +124,7 @@ function LoansTable({
 
 export default function DashboardClient({ initialLoans }: DashboardClientProps) {
   const [loans, setLoans] = useState<Loan[]>(initialLoans);
+  const [selectedBorrowerName, setSelectedBorrowerName] = useState<string | null>(null);
   const router = useRouter();
   const supabase = useSupabaseClient();
 
@@ -232,7 +244,7 @@ export default function DashboardClient({ initialLoans }: DashboardClientProps) 
         </div>
         <div className="flex gap-3">
           <ConnectPlaid />
-          <NewLoanModal onLoanCreated={handleLoanCreated} />
+          <NewLoanModal onLoanCreated={handleLoanCreated} data-tour="create-loan-button" />
         </div>
       </div>
 
@@ -291,7 +303,7 @@ export default function DashboardClient({ initialLoans }: DashboardClientProps) 
       <DashboardCharts loans={loans} />
 
       {/* Loans Table with Tabs */}
-      <Card className="border-slate-200 shadow-md">
+      <Card className="border-slate-200 shadow-md" data-tour="loan-table">
         <CardHeader>
           <CardTitle className="text-slate-900">Loan Portfolio</CardTitle>
           <CardDescription className="text-slate-600">
@@ -323,6 +335,7 @@ export default function DashboardClient({ initialLoans }: DashboardClientProps) 
                 getStatusBadge={getStatusBadge}
                 getRiskColor={getRiskColor}
                 onLoanClick={(id) => router.push(`/loans/${id}`)}
+                onBorrowerClick={(name) => setSelectedBorrowerName(name)}
               />
             </TabsContent>
 
@@ -334,6 +347,7 @@ export default function DashboardClient({ initialLoans }: DashboardClientProps) 
                 getStatusBadge={getStatusBadge}
                 getRiskColor={getRiskColor}
                 onLoanClick={(id) => router.push(`/loans/${id}`)}
+                onBorrowerClick={(name) => setSelectedBorrowerName(name)}
               />
             </TabsContent>
 
@@ -345,6 +359,7 @@ export default function DashboardClient({ initialLoans }: DashboardClientProps) 
                 getStatusBadge={getStatusBadge}
                 getRiskColor={getRiskColor}
                 onLoanClick={(id) => router.push(`/loans/${id}`)}
+                onBorrowerClick={(name) => setSelectedBorrowerName(name)}
               />
             </TabsContent>
 
@@ -356,11 +371,20 @@ export default function DashboardClient({ initialLoans }: DashboardClientProps) 
                 getStatusBadge={getStatusBadge}
                 getRiskColor={getRiskColor}
                 onLoanClick={(id) => router.push(`/loans/${id}`)}
+                onBorrowerClick={(name) => setSelectedBorrowerName(name)}
               />
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Borrower Detail Modal */}
+      <BorrowerDetailModal
+        open={selectedBorrowerName !== null}
+        onOpenChange={(open) => !open && setSelectedBorrowerName(null)}
+        borrowerName={selectedBorrowerName}
+        allLoans={loans}
+      />
     </div>
   );
 }

@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation';
 import { createServerSupabaseClient, getCurrentUser } from '@/lib/supabase/server';
 import ProtectedLayoutClient from './ProtectedLayoutClient';
 
+// Force dynamic rendering to always fetch fresh onboarding status
+export const dynamic = 'force-dynamic';
+
 export default async function ProtectedLayout({
   children,
 }: {
@@ -23,7 +26,10 @@ export default async function ProtectedLayout({
     .single();
 
   return (
-    <ProtectedLayoutClient user={user} profile={profile}>
+    <ProtectedLayoutClient
+      user={user}
+      profile={profile}
+    >
       {children}
     </ProtectedLayoutClient>
   );

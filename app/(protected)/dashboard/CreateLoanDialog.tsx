@@ -94,7 +94,6 @@ export default function CreateLoanDialog({
 
       onLoanCreated();
     } catch (error) {
-      console.error('Error creating loan:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to create loan', {
         description: errorMessage,
@@ -162,17 +161,17 @@ export default function CreateLoanDialog({
                 <Label>Start Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
+                    <button
+                      type="button"
+                      disabled={isLoading}
                       className={cn(
-                        'justify-start text-left font-normal',
+                        'flex h-9 w-full items-center justify-start gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
                         !startDate && 'text-muted-foreground'
                       )}
-                      disabled={isLoading}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {startDate ? format(startDate, 'PPP') : 'Pick a date'}
-                    </Button>
+                      <CalendarIcon className="h-4 w-4" />
+                      <span>{startDate ? format(startDate, 'PPP') : 'Pick a date'}</span>
+                    </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
                     <Calendar
@@ -189,17 +188,17 @@ export default function CreateLoanDialog({
                 <Label>Due Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
+                    <button
+                      type="button"
+                      disabled={isLoading}
                       className={cn(
-                        'justify-start text-left font-normal',
+                        'flex h-9 w-full items-center justify-start gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
                         !dueDate && 'text-muted-foreground'
                       )}
-                      disabled={isLoading}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dueDate ? format(dueDate, 'PPP') : 'Pick a date'}
-                    </Button>
+                      <CalendarIcon className="h-4 w-4" />
+                      <span>{dueDate ? format(dueDate, 'PPP') : 'Pick a date'}</span>
+                    </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
                     <Calendar

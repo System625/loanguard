@@ -14,9 +14,6 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to console (in production, send to error tracking service)
-    console.error('Global error:', error);
-
     // Show toast notification
     toast.error('Something went wrong', {
       description: error.message || 'An unexpected error occurred',
@@ -28,7 +25,7 @@ export default function Error({
       <Card className="w-full max-w-md">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600" />
+            <AlertTriangle className="h-5 w-5 text-orange-600" />
             <CardTitle className="text-slate-900">Something went wrong</CardTitle>
           </div>
           <CardDescription>
@@ -36,15 +33,15 @@ export default function Error({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-lg bg-red-50 p-4">
-            <p className="text-sm text-red-900 font-mono">
+          <div className="rounded-lg bg-orange-50 border border-orange-200 p-4">
+            <p className="text-sm text-slate-900 font-mono">
               {error.message || 'Unknown error'}
             </p>
           </div>
           <div className="flex gap-2">
             <Button
               onClick={reset}
-              className="flex-1 bg-blue-600 hover:bg-blue-700"
+              className="flex-1"
             >
               Try again
             </Button>

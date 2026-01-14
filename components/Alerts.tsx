@@ -54,7 +54,6 @@ export default function Alerts({}: AlertsProps) {
 
       setAlerts(data || []);
     } catch (error) {
-      console.error('Error fetching alerts:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to load alerts', {
         description: errorMessage,
@@ -155,7 +154,6 @@ export default function Alerts({}: AlertsProps) {
         )
       );
     } catch (error) {
-      console.error('Error marking alert as read:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to mark as read', {
         description: errorMessage,
@@ -182,7 +180,6 @@ export default function Alerts({}: AlertsProps) {
 
       toast.success('All alerts marked as read');
     } catch (error) {
-      console.error('Error marking all as read:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to mark all as read', {
         description: errorMessage,
@@ -202,7 +199,6 @@ export default function Alerts({}: AlertsProps) {
       setAlerts((current) => current.filter((alert) => alert.id !== alertId));
       toast.success('Alert deleted');
     } catch (error) {
-      console.error('Error deleting alert:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast.error('Failed to delete alert', {
         description: errorMessage,
@@ -214,15 +210,15 @@ export default function Alerts({}: AlertsProps) {
     switch (severity) {
       case 'high':
         return (
-          <Badge className="bg-red-500 hover:bg-red-600 text-xs">High</Badge>
+          <Badge className="bg-destructive hover:bg-destructive/90 text-xs">High</Badge>
         );
       case 'medium':
         return (
-          <Badge className="bg-yellow-500 hover:bg-yellow-600 text-xs">Medium</Badge>
+          <Badge className="bg-accent hover:bg-accent/90 text-xs">Medium</Badge>
         );
       case 'low':
         return (
-          <Badge className="bg-blue-500 hover:bg-blue-600 text-xs">Low</Badge>
+          <Badge className="bg-primary hover:bg-primary/90 text-xs">Low</Badge>
         );
       default:
         return <Badge variant="outline" className="text-xs">{severity}</Badge>;
@@ -231,11 +227,11 @@ export default function Alerts({}: AlertsProps) {
 
   const getTypeBadge = (type: string) => {
     const typeColors: Record<string, string> = {
-      overdue: 'bg-red-100 text-red-800 border-red-200',
-      payment_due: 'bg-orange-100 text-orange-800 border-orange-200',
-      high_risk: 'bg-purple-100 text-purple-800 border-purple-200',
-      payment_received: 'bg-green-100 text-green-800 border-green-200',
-      default: 'bg-slate-100 text-slate-800 border-slate-200',
+      overdue: 'bg-destructive/10 text-destructive border-destructive/30',
+      payment_due: 'bg-accent/10 text-accent-foreground border-accent/30',
+      high_risk: 'bg-secondary/20 text-secondary-foreground border-secondary/40',
+      payment_received: 'bg-primary/10 text-primary border-primary/30',
+      default: 'bg-muted text-muted-foreground border-border',
     };
 
     const colorClass = typeColors[type] || typeColors.default;
@@ -295,7 +291,7 @@ export default function Alerts({}: AlertsProps) {
                 variant="ghost"
                 size="sm"
                 onClick={markAllAsRead}
-                className="text-blue-600 hover:text-blue-700 text-xs"
+                className="text-primary hover:text-primary/80 text-xs"
               >
                 <Check className="h-3 w-3 mr-1" />
                 Mark all read
@@ -315,19 +311,19 @@ export default function Alerts({}: AlertsProps) {
           {isLoading ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="p-4 border border-slate-200 rounded-lg animate-pulse">
-                  <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-slate-200 rounded w-full"></div>
+                <div key={i} className="p-4 border border-border rounded-lg animate-pulse">
+                  <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-muted rounded w-full"></div>
                 </div>
               ))}
             </div>
           ) : alerts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Bell className="h-12 w-12 text-slate-400 mb-4" />
-              <h3 className="text-lg font-medium text-slate-900 mb-2">
+              <Bell className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
                 No notifications
               </h3>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-muted-foreground">
                 You&apos;re all caught up! New alerts will appear here.
               </p>
             </div>
@@ -338,8 +334,8 @@ export default function Alerts({}: AlertsProps) {
                   key={alert.id}
                   className={`p-4 border rounded-lg transition-colors ${
                     alert.read
-                      ? 'border-slate-200 bg-white'
-                      : 'border-blue-200 bg-blue-50'
+                      ? 'border-border bg-white'
+                      : 'border-primary/30 bg-primary/5'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
@@ -350,17 +346,17 @@ export default function Alerts({}: AlertsProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6 text-slate-400 hover:text-slate-600"
+                      className="h-6 w-6 text-muted-foreground hover:text-foreground"
                       onClick={() => deleteAlert(alert.id)}
                     >
                       <X className="h-3 w-3" />
                     </Button>
                   </div>
 
-                  <p className="text-sm text-slate-900 mb-2">{alert.message}</p>
+                  <p className="text-sm text-foreground mb-2">{alert.message}</p>
 
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       {formatDateTime(alert.triggered_at || alert.created_at || '')}
                     </p>
                     <div className="flex items-center gap-2">
@@ -368,7 +364,7 @@ export default function Alerts({}: AlertsProps) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 text-xs text-blue-600 hover:text-blue-700"
+                          className="h-7 text-xs text-primary hover:text-primary/80"
                           onClick={() => {
                             router.push(`/loans/${alert.loan_id}`);
                             setIsOpen(false);
